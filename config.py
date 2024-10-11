@@ -1,5 +1,7 @@
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 class MysqlConfig:
     MYSQL_HOST = os.getenv("MYSQL_HOST", "127.0.0.1")
