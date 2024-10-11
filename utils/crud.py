@@ -80,3 +80,10 @@ def create_follow(db: Session, follower_id: int, following_id: int):
         db.rollback()
         return None
     return db_follow
+
+
+def get_following_users(db: Session, user_id: int):
+    return db.query(Follow).filter(Follow.follower_id == user_id).all()
+
+def get_follower_users(db: Session, user_id: int):
+    return db.query(Follow).filter(Follow.following_id == user_id).all()

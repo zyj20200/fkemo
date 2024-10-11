@@ -3,10 +3,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import models
 from database import engine, get_db
-from schemas import UserCreate, UserLogin, PostCreate, CommentCreate, LikeCreate, UserResponse, PostResponse, \
-    CommentResponse, LikeResponse, FollowCreate, FollowResponse, CommentsListResponse, LikeCountResponse
-from utils.crud import create_user, create_post, create_comment, create_like, create_follow, get_post_by_id, \
-    get_user_by_id, get_comments_by_post_id, get_like_count_by_post_id
+from schemas import (UserCreate, UserLogin, PostCreate, CommentCreate, LikeCreate,
+                     UserResponse, PostResponse, CommentResponse, LikeResponse, FollowCreate,
+                     FollowResponse, CommentsListResponse, LikeCountResponse, FollowingListResponse,
+                     FollowersListResponse, FollowedUser)
+from utils.crud import (create_user, create_post, create_comment, create_like, create_follow,
+                        get_post_by_id, get_user_by_id, get_comments_by_post_id, get_like_count_by_post_id,
+                        get_following_users, get_follower_users)
 from utils.auth import authenticate_user, create_access_token, get_current_user
 
 models.Base.metadata.create_all(bind=engine)
@@ -104,6 +107,28 @@ def get_post_likes(post_id: int, db: Session = Depends(get_db)):
         )
     like_count = get_like_count_by_post_id(db, post_id)
     return {"count": like_count}
+
+
+@app.get("/me/following", response_model=FollowingListResponse)
+def get_following(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """获取当前用户关注的人"""
+    followed = get_following_users(db, current_user.id)
+    result = []
+    for f in followed:
+        user = get_user_by_id(db, f.following_id)
+        result.append(FollowedUser(**vars(user)))
+    return {"following": result, "count": len(result)}
+
+
+@app.get("/me/followers", response_model=FollowersListResponse)
+def get_followers(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """获取关注当前用户的人"""
+    followers = get_follower_users(db, current_user.id)
+    result = []
+    for f in followers:
+        user = get_user_by_id(db, f.follower_id)
+        result.append(FollowedUser(**vars(user)))
+    return {"followers": result, "count": len(result)}
 
 
 if __name__ == '__main__':
