@@ -19,7 +19,7 @@ class UserResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class PostCreate(BaseModel):
     content: str
@@ -32,7 +32,7 @@ class PostResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class CommentCreate(BaseModel):
     content: str
@@ -47,7 +47,7 @@ class CommentResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class LikeCreate(BaseModel):
     post_id: int
@@ -59,16 +59,28 @@ class LikeResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
+
+class FollowCreate(BaseModel):
+    following_id: int
+
+class FollowResponse(BaseModel):
+    id: int
+    follower_id: int
+    following_id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
 
 class CommentsListResponse(BaseModel):
     comments: List[CommentResponse]
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class LikeCountResponse(BaseModel):
     count: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True

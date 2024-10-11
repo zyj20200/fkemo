@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 import models
 from database import engine, get_db
 from schemas import UserCreate, UserLogin, PostCreate, CommentCreate, LikeCreate, UserResponse, PostResponse, \
-    CommentResponse, LikeResponse, CommentsListResponse, LikeCountResponse
-from utils.crud import create_user, create_post, create_comment, create_like, get_post_by_id, get_comments_by_post_id, \
-    get_like_count_by_post_id
+    CommentResponse, LikeResponse, FollowCreate, FollowResponse, CommentsListResponse, LikeCountResponse
+from utils.crud import create_user, create_post, create_comment, create_like, create_follow, get_post_by_id, \
+    get_user_by_id, get_comments_by_post_id, get_like_count_by_post_id
 from utils.auth import authenticate_user, create_access_token, get_current_user
 
 models.Base.metadata.create_all(bind=engine)
@@ -65,6 +65,23 @@ def create_new_like(like: LikeCreate, db: Session = Depends(get_db)):
         )
     db_like = create_like(db, like.post_id)
     return db_like
+
+
+@app.post("/follow", response_model=FollowResponse)
+def follow_user(follow: FollowCreate, db: Session = Depends(get_db),
+                current_user: models.User = Depends(get_current_user)):
+    if not get_user_by_id(db, follow.following_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    db_follow = create_follow(db, current_user.id, follow.following_id)
+    if db_follow is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Already following this user",
+        )
+    return db_follow
 
 
 @app.get("/post/{post_id}/comments", response_model=CommentsListResponse)

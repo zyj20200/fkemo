@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -13,6 +13,8 @@ class User(Base):
     nickname = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    followers = relationship("Follow", back_populates="follower", foreign_keys="Follow.follower_id")
+    following = relationship("Follow", back_populates="following", foreign_keys="Follow.following_id")
 
 
 class Post(Base):
@@ -44,3 +46,17 @@ class Like(Base):
     post_id = Column(Integer, ForeignKey("posts.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Follow(Base):
+    __tablename__ = "follows"
+
+    id = Column(Integer, primary_key=True, index=True)
+    follower_id = Column(Integer, ForeignKey("users.id"))
+    following_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    follower = relationship("User", foreign_keys=[follower_id], back_populates="followers")
+    following = relationship("User", foreign_keys=[following_id], back_populates="following")
+
+    __table_args__ = (UniqueConstraint('follower_id', 'following_id', name='_follower_following_uc'),)
