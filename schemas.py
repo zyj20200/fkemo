@@ -40,6 +40,14 @@ class PostResponse(BaseModel):
         orm_mode = True
 
 
+class PagedPostResponse(BaseModel):
+    total: int
+    posts: List[PostResponse]
+
+    class Config:
+        orm_mode = True
+
+
 class CommentCreate(BaseModel):
     content: str
     nickname: str = None

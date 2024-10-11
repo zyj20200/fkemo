@@ -6,10 +6,12 @@ from database import engine, get_db
 from schemas import (UserCreate, UserLogin, PostCreate, CommentCreate, LikeCreate,
                      UserResponse, PostResponse, CommentResponse, LikeResponse, FollowCreate,
                      FollowResponse, CommentsListResponse, LikeCountResponse, FollowingListResponse,
-                     FollowersListResponse, FollowedUser)
+                     FollowersListResponse, FollowedUser, PagedPostResponse)
 from utils.crud import (create_user, create_post, create_comment, create_like, create_follow,
                         get_post_by_id, get_user_by_id, get_comments_by_post_id, get_like_count_by_post_id,
-                        get_following_users, get_follower_users)
+                        get_following_users, get_follower_users, get_user_posts, get_following_users_posts,
+                        get_user_post_count, get_following_users_post_count, get_specific_following_user_posts,
+                        get_specific_following_user_post_count)
 from utils.auth import authenticate_user, create_access_token, get_current_user
 
 models.Base.metadata.create_all(bind=engine)
@@ -129,6 +131,41 @@ def get_followers(current_user: models.User = Depends(get_current_user), db: Ses
         user = get_user_by_id(db, f.follower_id)
         result.append(FollowedUser(**vars(user)))
     return {"followers": result, "count": len(result)}
+
+
+@app.get("/me/posts", response_model=PagedPostResponse)
+def get_my_posts(page: int = 1, page_size: int = 10, current_user: models.User = Depends(get_current_user),
+                 db: Session = Depends(get_db)):
+    """获取当前用户的所有帖子并分页显示"""
+    skip = (page - 1) * page_size
+    total = get_user_post_count(db, current_user.id)
+    posts = get_user_posts(db, current_user.id, skip=skip, limit=page_size)
+    return {"total": total, "posts": posts}
+
+
+@app.get("/me/following/posts", response_model=PagedPostResponse)
+def get_following_posts(page: int = 1, page_size: int = 10, current_user: models.User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    """获取当前用户的关注用户的所有帖子并分页显示"""
+    skip = (page - 1) * page_size
+    total = get_following_users_post_count(db, current_user.id)
+    posts = get_following_users_posts(db, current_user.id, skip=skip, limit=page_size)
+    return {"total": total, "posts": posts}
+
+
+@app.get("/user/{following_id}/posts", response_model=PagedPostResponse)
+def get_specific_user_posts(following_id: int, page: int = 1, page_size: int = 10,
+                            current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """获取关注用户的某个用户的所有帖子并分页显示"""
+    skip = (page - 1) * page_size
+    total = get_specific_following_user_post_count(db, current_user.id, following_id)
+    if total is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are not following this user",
+        )
+    posts = get_specific_following_user_posts(db, current_user.id, following_id, skip=skip, limit=page_size)
+    return {"total": total, "posts": posts}
 
 
 if __name__ == '__main__':

@@ -85,5 +85,47 @@ def create_follow(db: Session, follower_id: int, following_id: int):
 def get_following_users(db: Session, user_id: int):
     return db.query(Follow).filter(Follow.follower_id == user_id).all()
 
+
 def get_follower_users(db: Session, user_id: int):
     return db.query(Follow).filter(Follow.following_id == user_id).all()
+
+
+def get_user_posts(db: Session, user_id: int, skip: int = 0, limit: int = 10):
+    return db.query(Post).filter(Post.user_id == user_id).order_by(Post.created_at.desc()).offset(skip).limit(
+        limit).all()
+
+
+def get_following_users_posts(db: Session, user_id: int, skip: int = 0, limit: int = 10):
+    following_ids = db.query(Follow.following_id).filter(Follow.follower_id == user_id).subquery()
+    return db.query(Post).filter(Post.user_id.in_(following_ids)).order_by(Post.created_at.desc()).offset(skip).limit(
+        limit).all()
+
+
+def get_user_post_count(db: Session, user_id: int):
+    return db.query(Post).filter(Post.user_id == user_id).count()
+
+
+def get_following_users_post_count(db: Session, user_id: int):
+    following_ids = db.query(Follow.following_id).filter(Follow.follower_id == user_id).subquery()
+    return db.query(Post).filter(Post.user_id.in_(following_ids)).count()
+
+
+def get_specific_following_user_posts(db: Session, follower_id: int, following_id: int, skip: int = 0, limit: int = 10):
+    # 检查当前用户是否关注了该用户
+    follow_relation = db.query(Follow).filter(Follow.follower_id == follower_id,
+                                              Follow.following_id == following_id).first()
+    if follow_relation:
+        return db.query(Post).filter(Post.user_id == following_id).order_by(Post.created_at.desc()).offset(skip).limit(
+            limit).all()
+    else:
+        return None
+
+
+def get_specific_following_user_post_count(db: Session, follower_id: int, following_id: int):
+    # 检查当前用户是否关注了该用户
+    follow_relation = db.query(Follow).filter(Follow.follower_id == follower_id,
+                                              Follow.following_id == following_id).first()
+    if follow_relation:
+        return db.query(Post).filter(Post.user_id == following_id).count()
+    else:
+        return None
