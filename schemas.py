@@ -81,8 +81,8 @@ class CommentResponse(BaseModel):
         orm_mode = True
 
 
-class LikeCreate(BaseModel):
-    post_id: int
+# class LikeCreate(BaseModel):
+#     post_id: int
 
 
 class LikeResponse(BaseModel):

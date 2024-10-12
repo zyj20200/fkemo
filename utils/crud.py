@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from models import User, Post, Comment, Like, Follow, InterestCategory, FanType
-from schemas import UserCreate, PostCreate, CommentCreate, LikeCreate, FollowCreate, InterestCategoryCreate, \
-    FanTypeCreate
+from schemas import UserCreate, PostCreate, CommentCreate, FollowCreate, InterestCategoryCreate, \
+    FanTypeCreate # LikeCreate,
 from passlib.context import CryptContext
 from datetime import datetime
 
