@@ -61,12 +61,29 @@ def get_post_by_id(db: Session, post_id: int):
 
 
 def create_comment(db: Session, comment: CommentCreate, post_id: int, current_user: User):
-    db_comment = Comment(content=comment.content, post_id=post_id, user_id=current_user.id,
-                         nickname=current_user.nickname, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
+    db_comment = Comment(
+        content=comment.content,
+        post_id=post_id,
+        user_id=current_user.id,
+        parent_id=comment.parent_id,
+        nickname=current_user.nickname,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
     return db_comment
+
+
+def get_comments_by_post_id(db: Session, post_id: int):
+    comments = db.query(Comment).filter(Comment.post_id == post_id, Comment.parent_id == None).order_by(
+        Comment.created_at).all()
+    return comments
+
+
+def get_comment_replies(db: Session, parent_id: int):
+    return db.query(Comment).filter(Comment.parent_id == parent_id).order_by(Comment.created_at).all()
 
 
 def toggle_like(db: Session, post_id: int, current_user: User):
@@ -93,10 +110,6 @@ def toggle_like(db: Session, post_id: int, current_user: User):
 
 def get_like_count_by_post_id(db: Session, post_id: int):
     return db.query(Like).filter(Like.post_id == post_id, Like.is_deleted == False).count()
-
-
-def get_comments_by_post_id(db: Session, post_id: int):
-    return db.query(Comment).filter(Comment.post_id == post_id).order_by(Comment.created_at).all()
 
 
 def create_follow(db: Session, follower_id: int, following_id: int):

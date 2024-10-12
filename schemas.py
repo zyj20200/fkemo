@@ -77,6 +77,7 @@ class PagedPostResponse(BaseModel):
 
 class CommentCreate(BaseModel):
     content: str
+    parent_id: Optional[int] = None  # 添加parent_id字段
 
 
 class CommentResponse(BaseModel):
@@ -84,9 +85,11 @@ class CommentResponse(BaseModel):
     content: str
     post_id: int
     user_id: int
+    parent_id: Optional[int] = None
     nickname: str
     created_at: datetime
     updated_at: datetime
+    replies: List["CommentResponse"] = Field(default_factory=list)  # 自引用字段
 
     class Config:
         orm_mode = True

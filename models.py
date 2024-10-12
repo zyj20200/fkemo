@@ -48,6 +48,9 @@ class Comment(Base):
     content = Column(Text)
     post_id = Column(Integer, ForeignKey("posts.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
+    parent_id = Column(Integer, ForeignKey("comments.id"), nullable=True)  # 添加parent_id字段
+    parent = relationship("Comment", remote_side=[id], back_populates="replies")
+    replies = relationship("Comment", back_populates="parent", cascade="all, delete-orphan")
     nickname = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -75,7 +78,9 @@ class Follow(Base):
     follower = relationship("User", foreign_keys=[follower_id], back_populates="followers")
     following = relationship("User", foreign_keys=[following_id], back_populates="following")
 
-    __table_args__ = (UniqueConstraint('follower_id', 'following_id', name='_follower_following_uc'),)
+    __table_args__ = (
+        UniqueConstraint('follower_id', 'following_id', name='_follower_following_uc'),
+    )
 
 
 class InterestCategory(Base):
