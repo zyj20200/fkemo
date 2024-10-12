@@ -7,19 +7,21 @@ class UserCreate(BaseModel):
     phone_number: str
     password: str
     nickname: str
-    role: str = "user"  # 添加角色字段，默认值为"user"
+    role: str = "user"
     interest_categories: Optional[List[str]] = []
     fan_types: Optional[List[str]] = []
+
 
 class UserLogin(BaseModel):
     phone_number: str
     password: str
 
+
 class UserResponse(BaseModel):
     id: int
     phone_number: str
     nickname: str
-    role: str  # 添加角色字段
+    role: str
     created_at: datetime
     updated_at: datetime
     interest_categories: List[str] = []
@@ -81,15 +83,24 @@ class CommentResponse(BaseModel):
         orm_mode = True
 
 
-# class LikeCreate(BaseModel):
-#     post_id: int
+class LikeCreate(BaseModel):
+    post_id: int
 
 
 class LikeResponse(BaseModel):
     id: int
     post_id: int
+    user_id: int
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class LikeActionResponse(BaseModel):
+    action: str
+    like: Optional[LikeResponse] = None
 
     class Config:
         orm_mode = True

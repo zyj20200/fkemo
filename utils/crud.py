@@ -55,8 +55,8 @@ def get_post_by_id(db: Session, post_id: int):
     return db.query(Post).filter(Post.id == post_id).first()
 
 
-def create_comment(db: Session, comment: CommentCreate, post_id: int):
-    db_comment = Comment(content=comment.content, post_id=post_id, nickname=comment.nickname,
+def create_comment(db: Session, comment: CommentCreate, post_id: int, current_user: User):
+    db_comment = Comment(content=comment.content, post_id=post_id, nickname=current_user.nickname,
                          created_at=datetime.utcnow(), updated_at=datetime.utcnow())
     db.add(db_comment)
     db.commit()
@@ -64,12 +64,19 @@ def create_comment(db: Session, comment: CommentCreate, post_id: int):
     return db_comment
 
 
-def create_like(db: Session, post_id: int):
-    db_like = Like(post_id=post_id, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
-    db.add(db_like)
-    db.commit()
-    db.refresh(db_like)
-    return db_like
+def toggle_like(db: Session, post_id: int, current_user: User):
+    like = db.query(Like).filter(Like.post_id == post_id, Like.user_id == current_user.id).first()
+    if like:
+        db.delete(like)
+        db.commit()
+        return {"action": "unliked"}
+    else:
+        db_like = Like(post_id=post_id, user_id=current_user.id, created_at=datetime.utcnow(),
+                       updated_at=datetime.utcnow())
+        db.add(db_like)
+        db.commit()
+        db.refresh(db_like)
+        return {"action": "liked", "like": db_like}
 
 
 def get_comments_by_post_id(db: Session, post_id: int):

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from utils.database import Base
 from datetime import datetime
@@ -11,11 +11,11 @@ class User(Base):
     phone_number = Column(String(15), unique=True, index=True)
     hashed_password = Column(String(128))
     nickname = Column(String(50))
-    role = Column(String(10), default="user")  # 添加角色字段，默认值为"user"
+    role = Column(String(10), default="user")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    interest_categories = Column(String(256), default='')  # 使用逗号分隔的字符串来存储多个类别
-    fan_types = Column(String(256), default='')  # 使用逗号分隔的字符串来存储多个类别
+    interest_categories = Column(String(256), default='')
+    fan_types = Column(String(256), default='')
     followers = relationship("Follow", back_populates="follower", foreign_keys="Follow.follower_id")
     following = relationship("Follow", back_populates="following", foreign_keys="Follow.following_id")
 
@@ -47,6 +47,7 @@ class Like(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("posts.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))  # 添加user_id字段
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
