@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from models import User, Post, Comment, Like, Follow, InterestCategory, FanType
 from schemas import UserCreate, PostCreate, CommentCreate, FollowCreate, InterestCategoryCreate, \
-    FanTypeCreate # LikeCreate,
+    FanTypeCreate
 from passlib.context import CryptContext
 from datetime import datetime
 
@@ -21,14 +21,19 @@ def create_user(db: Session, user: UserCreate):
     hashed_password = pwd_context.hash(user.password)
     interest_categories = ",".join(user.interest_categories) if user.interest_categories else ""
     fan_types = ",".join(user.fan_types) if user.fan_types else ""
-    db_user = User(phone_number=user.phone_number, hashed_password=hashed_password, nickname=user.nickname,
-                   interest_categories=interest_categories, fan_types=fan_types)
+    db_user = User(
+        phone_number=user.phone_number,
+        hashed_password=hashed_password,
+        nickname=user.nickname,
+        role=user.role,
+        interest_categories=interest_categories,
+        fan_types=fan_types
+    )
     db.add(db_user)
     try:
         db.commit()
         db.refresh(db_user)
-    except Exception as e:
-        print(e)
+    except IntegrityError:
         db.rollback()
         return None
     return db_user

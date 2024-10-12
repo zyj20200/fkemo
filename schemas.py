@@ -7,19 +7,19 @@ class UserCreate(BaseModel):
     phone_number: str
     password: str
     nickname: str
+    role: str = "user"  # 添加角色字段，默认值为"user"
     interest_categories: Optional[List[str]] = []
     fan_types: Optional[List[str]] = []
-
 
 class UserLogin(BaseModel):
     phone_number: str
     password: str
 
-
 class UserResponse(BaseModel):
     id: int
     phone_number: str
     nickname: str
+    role: str  # 添加角色字段
     created_at: datetime
     updated_at: datetime
     interest_categories: List[str] = []

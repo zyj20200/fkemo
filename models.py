@@ -11,6 +11,7 @@ class User(Base):
     phone_number = Column(String(15), unique=True, index=True)
     hashed_password = Column(String(128))
     nickname = Column(String(50))
+    role = Column(String(10), default="user")  # 添加角色字段，默认值为"user"
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     interest_categories = Column(String(256), default='')  # 使用逗号分隔的字符串来存储多个类别
