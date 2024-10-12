@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, Table, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
-from database import Base
+from utils.database import Base
 from datetime import datetime
 
 
@@ -13,6 +13,8 @@ class User(Base):
     nickname = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    interest_categories = Column(String(256), default='')  # 使用逗号分隔的字符串来存储多个类别
+    fan_types = Column(String(256), default='')  # 使用逗号分隔的字符串来存储多个类别
     followers = relationship("Follow", back_populates="follower", foreign_keys="Follow.follower_id")
     following = relationship("Follow", back_populates="following", foreign_keys="Follow.following_id")
 
@@ -60,3 +62,19 @@ class Follow(Base):
     following = relationship("User", foreign_keys=[following_id], back_populates="following")
 
     __table_args__ = (UniqueConstraint('follower_id', 'following_id', name='_follower_following_uc'),)
+
+
+class InterestCategory(Base):
+    __tablename__ = "interest_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class FanType(Base):
+    __tablename__ = "fan_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

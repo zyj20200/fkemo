@@ -1,12 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 
 class UserCreate(BaseModel):
     phone_number: str
     password: str
     nickname: str
+    interest_categories: Optional[List[str]] = []
+    fan_types: Optional[List[str]] = []
 
 
 class UserLogin(BaseModel):
@@ -20,6 +22,20 @@ class UserResponse(BaseModel):
     nickname: str
     created_at: datetime
     updated_at: datetime
+    interest_categories: List[str] = []
+    fan_types: List[str] = []
+
+    @field_validator('interest_categories', mode='before')
+    def handle_interest_categories(cls, value):
+        if isinstance(value, str):
+            return value.split(",")
+        return value
+
+    @field_validator('fan_types', mode='before')
+    def handle_fan_types(cls, value):
+        if isinstance(value, str):
+            return value.split(",")
+        return value
 
     class Config:
         orm_mode = True
@@ -129,6 +145,32 @@ class FollowingListResponse(BaseModel):
 class FollowersListResponse(BaseModel):
     followers: List[FollowedUser]
     count: int
+
+    class Config:
+        orm_mode = True
+
+
+class InterestCategoryCreate(BaseModel):
+    name: str
+
+
+class InterestCategoryResponse(BaseModel):
+    id: int
+    name: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class FanTypeCreate(BaseModel):
+    name: str
+
+
+class FanTypeResponse(BaseModel):
+    id: int
+    name: str
+    created_at: datetime
 
     class Config:
         orm_mode = True

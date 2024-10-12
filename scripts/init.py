@@ -1,5 +1,3 @@
-# 创建账号
-
 import random
 import requests
 

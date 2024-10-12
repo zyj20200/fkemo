@@ -1,17 +1,24 @@
+from typing import List
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import models
-from database import engine, get_db
-from schemas import (UserCreate, UserLogin, PostCreate, CommentCreate, LikeCreate,
-                     UserResponse, PostResponse, CommentResponse, LikeResponse, FollowCreate,
-                     FollowResponse, CommentsListResponse, LikeCountResponse, FollowingListResponse,
-                     FollowersListResponse, FollowedUser, PagedPostResponse)
-from utils.crud import (create_user, create_post, create_comment, create_like, create_follow,
-                        get_post_by_id, get_user_by_id, get_comments_by_post_id, get_like_count_by_post_id,
-                        get_following_users, get_follower_users, get_user_posts, get_following_users_posts,
-                        get_user_post_count, get_following_users_post_count, get_specific_following_user_posts,
-                        get_specific_following_user_post_count)
+from utils.database import engine, get_db
+from schemas import (
+    UserCreate, PostCreate, CommentCreate, LikeCreate,
+    UserResponse, PostResponse, CommentResponse, LikeResponse, FollowCreate,
+    FollowResponse, CommentsListResponse, LikeCountResponse, FollowingListResponse,
+    FollowersListResponse, FollowedUser, PagedPostResponse, InterestCategoryCreate,
+    InterestCategoryResponse, FanTypeCreate, FanTypeResponse
+)
+from utils.crud import (
+    create_user, create_post, create_comment, create_like, create_follow,
+    get_post_by_id, get_user_by_id, get_comments_by_post_id, get_like_count_by_post_id,
+    get_following_users, get_follower_users, get_user_posts, get_following_users_posts,
+    get_user_post_count, get_following_users_post_count, get_specific_following_user_posts,
+    get_specific_following_user_post_count, create_interest_category, get_all_interest_categories,
+    create_fan_type, get_all_fan_types
+)
 from utils.auth import authenticate_user, create_access_token, get_current_user
 
 models.Base.metadata.create_all(bind=engine)
@@ -166,6 +173,34 @@ def get_specific_user_posts(following_id: int, page: int = 1, page_size: int = 1
         )
     posts = get_specific_following_user_posts(db, current_user.id, following_id, skip=skip, limit=page_size)
     return {"total": total, "posts": posts}
+
+
+@app.get("/interest_categories", response_model=List[InterestCategoryResponse])
+def get_interest_categories(db: Session = Depends(get_db)):
+    """获取所有兴趣类别"""
+    categories = get_all_interest_categories(db)
+    return categories
+
+
+@app.post("/interest_categories", response_model=InterestCategoryResponse)
+def create_interest_categories(category: InterestCategoryCreate, db: Session = Depends(get_db)):
+    """创建新的兴趣类别"""
+    db_category = create_interest_category(db, category)
+    return db_category
+
+
+@app.get("/fan_types", response_model=List[FanTypeResponse])
+def get_fan_types(db: Session = Depends(get_db)):
+    """获取所有粉丝类型"""
+    fan_types = get_all_fan_types(db)
+    return fan_types
+
+
+@app.post("/fan_types", response_model=FanTypeResponse)
+def create_fan_types(fan_type: FanTypeCreate, db: Session = Depends(get_db)):
+    """创建新的粉丝类型"""
+    db_fan_type = create_fan_type(db, fan_type)
+    return db_fan_type
 
 
 if __name__ == '__main__':

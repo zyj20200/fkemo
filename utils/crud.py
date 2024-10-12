@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from models import User, Post, Comment, Like, Follow
-from schemas import UserCreate, PostCreate, CommentCreate, LikeCreate, FollowCreate
+from models import User, Post, Comment, Like, Follow, InterestCategory, FanType
+from schemas import UserCreate, PostCreate, CommentCreate, LikeCreate, FollowCreate, InterestCategoryCreate, \
+    FanTypeCreate
 from passlib.context import CryptContext
 from datetime import datetime
 
@@ -18,12 +19,16 @@ def get_user_by_id(db: Session, user_id: int):
 
 def create_user(db: Session, user: UserCreate):
     hashed_password = pwd_context.hash(user.password)
-    db_user = User(phone_number=user.phone_number, hashed_password=hashed_password, nickname=user.nickname)
+    interest_categories = ",".join(user.interest_categories) if user.interest_categories else ""
+    fan_types = ",".join(user.fan_types) if user.fan_types else ""
+    db_user = User(phone_number=user.phone_number, hashed_password=hashed_password, nickname=user.nickname,
+                   interest_categories=interest_categories, fan_types=fan_types)
     db.add(db_user)
     try:
         db.commit()
         db.refresh(db_user)
-    except IntegrityError:
+    except Exception as e:
+        print(e)
         db.rollback()
         return None
     return db_user
@@ -129,3 +134,27 @@ def get_specific_following_user_post_count(db: Session, follower_id: int, follow
         return db.query(Post).filter(Post.user_id == following_id).count()
     else:
         return None
+
+
+def create_interest_category(db: Session, category: InterestCategoryCreate):
+    db_category = InterestCategory(name=category.name)
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+
+def get_all_interest_categories(db: Session):
+    return db.query(InterestCategory).all()
+
+
+def create_fan_type(db: Session, fan_type: FanTypeCreate):
+    db_fan_type = FanType(name=fan_type.name)
+    db.add(db_fan_type)
+    db.commit()
+    db.refresh(db_fan_type)
+    return db_fan_type
+
+
+def get_all_fan_types(db: Session):
+    return db.query(FanType).all()
