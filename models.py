@@ -37,6 +37,7 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text)
     post_id = Column(Integer, ForeignKey("posts.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))  # 添加user_id字段
     nickname = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

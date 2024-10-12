@@ -56,8 +56,8 @@ def get_post_by_id(db: Session, post_id: int):
 
 
 def create_comment(db: Session, comment: CommentCreate, post_id: int, current_user: User):
-    db_comment = Comment(content=comment.content, post_id=post_id, nickname=current_user.nickname,
-                         created_at=datetime.utcnow(), updated_at=datetime.utcnow())
+    db_comment = Comment(content=comment.content, post_id=post_id, user_id=current_user.id,
+                         nickname=current_user.nickname, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
@@ -78,11 +78,13 @@ def toggle_like(db: Session, post_id: int, current_user: User):
             db.commit()
             return {"action": "unliked"}
     else:
-        db_like = Like(post_id=post_id, user_id=current_user.id, created_at=datetime.utcnow(), updated_at=datetime.utcnow(), is_deleted=False)
+        db_like = Like(post_id=post_id, user_id=current_user.id, created_at=datetime.utcnow(),
+                       updated_at=datetime.utcnow(), is_deleted=False)
         db.add(db_like)
         db.commit()
         db.refresh(db_like)
         return {"action": "liked", "like": db_like}
+
 
 def get_like_count_by_post_id(db: Session, post_id: int):
     return db.query(Like).filter(Like.post_id == post_id, Like.is_deleted == False).count()
@@ -90,7 +92,6 @@ def get_like_count_by_post_id(db: Session, post_id: int):
 
 def get_comments_by_post_id(db: Session, post_id: int):
     return db.query(Comment).filter(Comment.post_id == post_id).order_by(Comment.created_at).all()
-
 
 
 def create_follow(db: Session, follower_id: int, following_id: int):

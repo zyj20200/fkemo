@@ -68,13 +68,13 @@ class PagedPostResponse(BaseModel):
 
 class CommentCreate(BaseModel):
     content: str
-    nickname: str = None
 
 
 class CommentResponse(BaseModel):
     id: int
     content: str
     post_id: int
+    user_id: int
     nickname: str
     created_at: datetime
     updated_at: datetime
