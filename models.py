@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, Table, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, Boolean, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from utils.database import Base
 from datetime import datetime
@@ -47,7 +47,8 @@ class Like(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("posts.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))  # 添加user_id字段
+    user_id = Column(Integer, ForeignKey("users.id"))
+    is_deleted = Column(Boolean, default=False)  # 添加is_deleted字段
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
