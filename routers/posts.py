@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
-from fastapi import status
-
+from typing import Optional, List
 from utils.database import get_db
 from schemas import PostCreate, PostResponse, PagedPostResponse
 from utils.crud import create_post, get_user_post_count, get_user_posts, get_following_users_post_count, \
     get_following_users_posts, get_specific_following_user_post_count, get_specific_following_user_posts
 from utils.auth import get_current_user
 import models
+import shutil
+import os
 
 router = APIRouter(
     prefix="/posts",
@@ -15,12 +16,21 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+UPLOAD_DIR = "uploads"
+
 
 @router.post("/", response_model=PostResponse)
-def create_new_post(post: PostCreate, db: Session = Depends(get_db),
-                    current_user: models.User = Depends(get_current_user)):
-    """创建新帖子"""
-    db_post = create_post(db, post, current_user.id)
+def create_new_post(content: str = Form(...), db: Session = Depends(get_db),
+                    current_user: models.User = Depends(get_current_user), files: List[UploadFile] = File([])):
+    image_urls = []
+    for file in files:
+        file_path = os.path.join(UPLOAD_DIR, file.filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        image_urls.append(file_path)
+
+    post_data = PostCreate(content=content)
+    db_post = create_post(db, post_data, current_user.id, image_urls)
     return db_post
 
 

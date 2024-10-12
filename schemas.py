@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from typing import List, Optional
 
@@ -43,6 +43,14 @@ class UserResponse(BaseModel):
         orm_mode = True
 
 
+class PostImageResponse(BaseModel):
+    id: int
+    image_url: str
+
+    class Config:
+        orm_mode = True
+
+
 class PostCreate(BaseModel):
     content: str
 
@@ -50,6 +58,7 @@ class PostCreate(BaseModel):
 class PostResponse(BaseModel):
     id: int
     content: str
+    images: List[PostImageResponse] = Field(default_factory=list)
     user_id: int
     created_at: datetime
     updated_at: datetime

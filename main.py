@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from utils.database import engine
@@ -30,6 +31,9 @@ app.include_router(posts.router)
 app.include_router(comments.router)
 app.include_router(likes.router)
 
+UPLOAD_DIR = "uploads"
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
 
 if __name__ == '__main__':
     import uvicorn

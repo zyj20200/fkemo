@@ -27,8 +27,18 @@ class Post(Base):
     content = Column(Text)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User")
+    images = relationship("PostImage", back_populates="post")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class PostImage(Base):
+    __tablename__ = "post_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("posts.id"))
+    image_url = Column(String(256))
+    post = relationship("Post", back_populates="images")
 
 
 class Comment(Base):
@@ -37,7 +47,7 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text)
     post_id = Column(Integer, ForeignKey("posts.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))  # 添加user_id字段
+    user_id = Column(Integer, ForeignKey("users.id"))
     nickname = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -49,7 +59,7 @@ class Like(Base):
     id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("posts.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
-    is_deleted = Column(Boolean, default=False)  # 添加is_deleted字段
+    is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

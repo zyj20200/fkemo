@@ -1,6 +1,7 @@
+from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from models import User, Post, Comment, Like, Follow, InterestCategory, FanType
+from models import User, Post, Comment, Like, Follow, InterestCategory, FanType, PostImage
 from schemas import UserCreate, PostCreate, CommentCreate, FollowCreate, InterestCategoryCreate, \
     FanTypeCreate
 from passlib.context import CryptContext
@@ -43,9 +44,13 @@ def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def create_post(db: Session, post: PostCreate, user_id: int):
+def create_post(db: Session, post: PostCreate, user_id: int, image_urls: List[str] = []):
     db_post = Post(content=post.content, user_id=user_id, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
     db.add(db_post)
+    db.commit()
+    for image_url in image_urls:
+        db_image = PostImage(post_id=db_post.id, image_url=image_url)
+        db.add(db_image)
     db.commit()
     db.refresh(db_post)
     return db_post
